@@ -498,6 +498,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._ontimeupdate = o.ontimeupdate ? [{fn: o.ontimeupdate}] : [];
       self._onresume = [];
 
       // Web Audio or HTML5 Audio?
@@ -2008,6 +2009,10 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
+        // Listen for 'timeupdate' event to let us know each time the sound has progressed
+        self._updateFn = self._timeUpdateListener.bind(self);
+        self._node.addEventListener('timeupdate', self._updateFn, false);
+
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = 'auto';
@@ -2043,6 +2048,14 @@
       self._id = ++Howler._counter;
 
       return self;
+    },
+
+    /**
+     * HTML5 Time update listener callback
+     */
+    _timeUpdateListener: function() {
+        var self = this;
+        self._parent._emit('timeupdate', self._id);
     },
 
     /**
